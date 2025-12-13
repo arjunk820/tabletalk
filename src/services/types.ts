@@ -55,6 +55,18 @@ export interface YelpBusinessSummaries {
   long: string | null;
 }
 
+export interface YelpBusinessPhoto {
+  original_url: string;
+}
+
+export interface YelpBusinessContextualInfo {
+  summary?: string | null;
+  review_snippets?: unknown[];
+  business_hours?: unknown[];
+  photos?: YelpBusinessPhoto[];
+  review_snippet?: string | null;
+}
+
 export interface YelpBusiness {
   id: string;
   alias: string;
@@ -69,6 +81,7 @@ export interface YelpBusiness {
   phone: string;
   summaries: YelpBusinessSummaries;
   attributes?: Record<string, unknown>;
+  contextual_info?: YelpBusinessContextualInfo;
 }
 
 export interface YelpEntity {
