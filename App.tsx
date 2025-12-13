@@ -1,11 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import ApiTestScreen from './src/screens/ApiTestScreen';
+import SwipeScreen from './src/screens/SwipeScreen';
 
 export default function App() {
   return (
     <>
-      <ApiTestScreen />
+      <SwipeScreen />
       <StatusBar style="auto" />
     </>
   );
