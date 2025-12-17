@@ -73,52 +73,6 @@ tabletalk is a plans-first, social dining app where restaurants are conversation
 
 ```
 
-## Project Structure
-
-```
-tabletalk/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── ActionBar.tsx
-│   │   ├── Chip.tsx
-│   │   ├── MetaRow.tsx
-│   │   ├── RestaurantCard.tsx
-│   │   ├── RestaurantCardCompact.tsx
-│   │   ├── SparklesIcon.tsx
-│   │   └── NavBar.tsx
-│   ├── screens/             # Screen components
-│   │   ├── OnboardingScreen.tsx
-│   │   ├── PlanBuilderScreen.tsx
-│   │   ├── RestaurantAssistantScreen.tsx
-│   │   ├── SavedTablesScreen.tsx
-│   │   ├── SettingsScreen.tsx
-│   │   ├── SwipeScreen.tsx
-│   │   ├── TableChatScreen.tsx
-│   │   └── TablesScreen.tsx
-│   ├── services/            # API services
-│   │   ├── groqApi.ts       # Groq API client
-│   │   ├── types.ts         # API type definitions
-│   │   └── yelpApi.ts       # Yelp API client
-│   ├── context/             # React Context providers
-│   │   └── SwipeContext.tsx
-│   ├── hooks/               # Custom React hooks
-│   ├── utils/               # Utility functions
-│   │   ├── aiCache.ts       # AI response caching
-│   │   ├── aiTemplates.ts   # AI prompt templates
-│   │   ├── distance.ts      # Distance calculations
-│   │   ├── mockData.ts      # Mock data for development
-│   │   └── storage.ts       # AsyncStorage utilities
-│   ├── design/              # Design tokens
-│   │   └── tokens.ts        # Colors, spacing, typography
-│   └── types/               # TypeScript type definitions
-│       └── env.d.ts         # Environment variable types
-├── assets/                  # Images and static assets
-├── App.tsx                  # Root component
-├── app.json                 # Expo configuration
-├── package.json             # Dependencies and scripts
-└── tsconfig.json            # TypeScript configuration
-```
-
 ## Code Standards
 
 - **TypeScript**: Strict mode enabled for type safety
@@ -143,7 +97,3 @@ tabletalk/
 ### Metro Bundler Issues
 - Clear cache: `npx expo start -c`
 - Reset: `rm -rf node_modules && npm install`
-
-## License
-
-See [LICENSE](./LICENSE) file for details.
