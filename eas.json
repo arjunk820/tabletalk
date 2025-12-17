@@ -14,12 +14,7 @@
       }
     },
     "production": {
-      "ios": {
-        "bundleIdentifier": "com.tabletalk.app"
-      },
-      "android": {
-        "package": "com.tabletalk.app"
-      }
+      "distribution": "internal"
     }
   },
   "submit": {

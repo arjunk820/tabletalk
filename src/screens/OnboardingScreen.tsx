@@ -241,7 +241,7 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
       <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
         <View style={styles.welcomeContainer}>
           <Image
-            source={require('../../tabletalk.png')}
+            source={require('../../assets/tabletalk.png')}
             style={styles.logo}
             resizeMode="contain"
           />

@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tabletalk.app"
+      "bundleIdentifier": "com.tabletalk.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +26,12 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.tabletalk.app"
+      "package": "com.tabletalk.app",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -42,6 +50,11 @@
           "cameraPermission": "Allow tabletalk to access your camera to take a profile picture."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "be6b25b7-1aff-4afa-9074-2f37c3c60c95"
+      }
+    }
   }
 }
