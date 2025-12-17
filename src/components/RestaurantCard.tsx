@@ -1,14 +1,12 @@
-/**
- * RestaurantCard Component
- * Full-bleed hero photo, name, meta row, rating, vibe chips
- */
-
-import React from 'react';
-import { View, Text, Image, StyleSheet, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, Dimensions, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../design/tokens';
 import MetaRow from './MetaRow';
 import Chip from './Chip';
+import SparklesIcon from './SparklesIcon';
 import { YelpBusiness } from '../services/types';
+import { generateWhyThisTable } from '../utils/aiTemplates';
+import { getUserPreferences } from '../utils/storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - spacing.md * 2;
@@ -17,9 +15,14 @@ const CARD_HEIGHT = CARD_WIDTH * 1.2; // 5:6 aspect ratio
 interface RestaurantCardProps {
   restaurant: YelpBusiness;
   onPress?: () => void;
+  onChatPress?: () => void;
+  userPreferences?: import('../utils/storage').UserPreferences | null;
 }
 
-export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
+export default function RestaurantCard({ restaurant, userPreferences, onChatPress }: RestaurantCardProps) {
+  const [whyTableText, setWhyTableText] = useState<string>('Based on your preferences');
+  const [isLoadingWhyTable, setIsLoadingWhyTable] = useState(true);
+  
   const photoUrl = restaurant.contextual_info?.photos?.[0]?.original_url || '';
   const cuisine = restaurant.categories[0]?.title || '';
   const neighborhood = restaurant.location.city || '';
@@ -37,6 +40,36 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
   }
   const displayChips = vibeChips.slice(0, 2);
 
+  // Load "Why this table" text asynchronously
+  useEffect(() => {
+    let cancelled = false;
+    
+    const loadWhyTable = async () => {
+      setIsLoadingWhyTable(true);
+      try {
+        const text = await generateWhyThisTable(restaurant, userPreferences || null);
+        if (!cancelled) {
+          setWhyTableText(text);
+        }
+      } catch (error) {
+        console.error('Error generating why this table:', error);
+        if (!cancelled) {
+          setWhyTableText('Based on your preferences');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingWhyTable(false);
+        }
+      }
+    };
+
+    loadWhyTable();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurant.id, userPreferences?.cuisines?.join(','), userPreferences?.budget?.join(',')]);
+
   return (
     <View style={styles.container}>
       {/* Hero Photo */}
@@ -48,6 +81,16 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
       
       {/* Content Overlay */}
       <View style={styles.overlay}>
+        {/* Chat Button */}
+        {onChatPress && (
+          <TouchableOpacity
+            style={styles.chatButton}
+            onPress={onChatPress}
+            activeOpacity={0.7}
+          >
+            <SparklesIcon size={20} color={colors.accent} />
+          </TouchableOpacity>
+        )}
         <View style={styles.content}>
           {/* Restaurant Name */}
           <Text style={styles.name} numberOfLines={1}>
@@ -75,6 +118,17 @@ export default function RestaurantCard({ restaurant }: RestaurantCardProps) {
                 <Chip key={chip} label={chip} />
               ))}
             </View>
+          )}
+          
+          {/* Why this table */}
+          {isLoadingWhyTable ? (
+            <View style={styles.whyTableLoading}>
+              <ActivityIndicator size="small" color={colors.gray200} />
+            </View>
+          ) : (
+            <Text style={styles.whyTable}>
+              {whyTableText}
+            </Text>
           )}
         </View>
       </View>
@@ -128,6 +182,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     marginTop: spacing.xs,
+  },
+  whyTable: {
+    ...typography.small,
+    color: colors.gray200,
+    marginTop: spacing.xs,
+    fontStyle: 'italic',
+  },
+  whyTableLoading: {
+    marginTop: spacing.xs,
+    alignItems: 'flex-start',
+  },
+  chatButton: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
 

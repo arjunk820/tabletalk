@@ -1,8 +1,3 @@
-/**
- * Design Tokens
- * 8pt spacing system, typography scale, colors
- */
-
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -86,4 +81,6 @@ export const shadows = {
     elevation: 2,
   },
 } as const;
+
+
 

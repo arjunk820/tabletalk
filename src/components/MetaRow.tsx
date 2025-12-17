@@ -1,8 +1,3 @@
-/**
- * MetaRow Component
- * Displays: Neighborhood · Cuisine · Price
- */
-
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors, typography, spacing } from '../design/tokens';

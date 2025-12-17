@@ -1,7 +1,3 @@
-/**
- * TypeScript interfaces for Yelp AI API responses
- */
-
 export interface YelpUserContext {
   locale: string;
   latitude?: number | null;

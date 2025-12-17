@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "SafeBite",
-    "slug": "safebite",
+    "name": "tabletalk",
+    "slug": "tabletalk",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/tabletalk.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -14,7 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.safebite.app"
+      "bundleIdentifier": "com.tabletalk.app"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.safebite.app"
+      "package": "com.tabletalk.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,7 +32,14 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow SafeBite to use your location to find nearby restaurants."
+          "locationAlwaysAndWhenInUsePermission": "Allow tabletalk to use your location to find nearby restaurants."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow tabletalk to access your photos to set a profile picture.",
+          "cameraPermission": "Allow tabletalk to access your camera to take a profile picture."
         }
       ]
     ]

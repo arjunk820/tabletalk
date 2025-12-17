@@ -1,8 +1,3 @@
-/**
- * ActionBar Component
- * Bottom action buttons: X (pass), ✓ (like), ℹ️ (info)
- */
-
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
@@ -97,7 +92,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
-    gap: spacing.md,
     paddingBottom: spacing.lg,
   },
   button: {
@@ -107,6 +101,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: colors.white,
+    marginHorizontal: spacing.sm,
   },
   passButton: {
     borderWidth: 1.5,
