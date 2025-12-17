@@ -40,7 +40,7 @@ export default function TablesScreen({ onEnterTable }: { onEnterTable?: (table: 
       <FlatList
         data={tables}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingBottom: 80 }]}
         renderItem={({ item: table }) => {
           const photoUrl = table.restaurant.contextual_info?.photos?.[0]?.original_url || '';
           const cuisine = table.restaurant.categories[0]?.title || '';

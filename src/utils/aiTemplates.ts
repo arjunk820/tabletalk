@@ -2,7 +2,6 @@ import { UserPreferences } from './storage';
 import { YelpBusiness } from '../services/types';
 import { 
   generateWhyThisTableAI, 
-  generateTimeSuggestionsAI, 
   generateInviteCopyAI,
   generatePlanCopilotAI 
 } from '../services/yelpApi';
@@ -96,27 +95,8 @@ export async function generateWhyThisTable(
   }
 }
 
-function generateTableStarterFallback(
-  restaurant: YelpBusiness
-): {
-  timeWindow: string[];
-  vibe: string[];
-  inviteCopy: string;
-} {
-  const timeWindows = ['Tonight', 'This week', 'Weekend'];
-  const vibes = ['Quick bite', 'Drinks', 'Dinner'];
-  const inviteCopy = `Want to try ${restaurant.name}? Let's make it happen!`;
-
-  return {
-    timeWindow: timeWindows,
-    vibe: vibes,
-    inviteCopy,
-  };
-}
-
 export async function generateTableStarter(
-  restaurant: YelpBusiness,
-  preferences: UserPreferences | null
+  restaurant: YelpBusiness
 ): Promise<{
   timeWindow: string[];
   vibe: string[];

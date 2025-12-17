@@ -1,4 +1,4 @@
-import { TableMember, Plan } from './storage';
+import { TableMember } from './storage';
 import { YelpBusiness } from '../services/types';
 
 // Mock user profiles for demo
@@ -23,7 +23,6 @@ export const DEMO_CONFIG = {
 };
 
 export function generateMockMembers(
-  excludeUserId: string = 'current_user',
   count?: number
 ): TableMember[] {
   if (!DEMO_CONFIG.enabled) {
@@ -41,7 +40,7 @@ export function generateMockMembers(
   return selected.map((user, index) => ({
     userId: `mock_user_${index + 1}`,
     name: user.name,
-    avatar: user.avatar,
+    avatar: user.avatar || undefined,
     joinedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000), // Random time in last 7 days
     timeIntent: ['tonight', 'thisWeek', 'weekend'][Math.floor(Math.random() * 3)] as 'tonight' | 'thisWeek' | 'weekend',
   }));
@@ -56,7 +55,7 @@ export function generateMockMessages(
   }
 
   const messages: Array<{ id: string; userId: string; name: string; text: string; timestamp: Date }> = [];
-  const mockMembers = generateMockMembers('current_user', memberCount || table.memberCount - 1);
+  const mockMembers = generateMockMembers(memberCount || table.memberCount - 1);
   
   if (mockMembers.length === 0) {
     return [];
@@ -64,7 +63,6 @@ export function generateMockMessages(
 
   // Generate conversation based on restaurant type/cuisine
   const restaurantName = table.restaurant.name;
-  const cuisine = table.restaurant.categories?.[0]?.title?.toLowerCase() || 'restaurant';
   
   // Initial interest message
   const firstMember = mockMembers[0];
@@ -150,7 +148,7 @@ export function addMockMembersToTable(table: {
     };
   }
 
-  const mockMembers = generateMockMembers('current_user');
+  const mockMembers = generateMockMembers();
   const mockMemberIds = mockMembers.map((m) => m.userId);
   
   // Combine with existing members (avoid duplicates)

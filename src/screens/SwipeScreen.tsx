@@ -558,6 +558,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.gray50,
+    paddingBottom: 80, // Space for bottom nav bar (NavBar height + padding)
   },
   cardContainer: {
     flex: 1,

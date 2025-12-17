@@ -6,7 +6,6 @@ import Chip from './Chip';
 import SparklesIcon from './SparklesIcon';
 import { YelpBusiness } from '../services/types';
 import { generateWhyThisTable } from '../utils/aiTemplates';
-import { getUserPreferences } from '../utils/storage';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - spacing.md * 2;

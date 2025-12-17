@@ -9,7 +9,7 @@ import TableChatScreen from './src/screens/TableChatScreen';
 import RestaurantAssistantScreen from './src/screens/RestaurantAssistantScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
-import TopNavBar from './src/components/TopNavBar';
+import NavBar from './src/components/NavBar';
 import { colors, spacing, typography } from './src/design/tokens';
 import { isOnboardingComplete, setOnboardingComplete, saveUserPreferences, UserPreferences, Table } from './src/utils/storage';
 import { YelpBusiness } from './src/services/types';
@@ -128,13 +128,8 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <SwipeProvider>
-        <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
           <View style={styles.container}>
-            <TopNavBar 
-              currentTab={currentTab} 
-              onTabChange={setCurrentTab}
-              onSettingsPress={() => setShowSettings(true)}
-            />
             <View style={styles.content}>
               {currentTab === 'swipe' ? (
                 <SwipeScreen 
@@ -145,6 +140,11 @@ export default function App() {
                 <SavedTablesScreen onTablePress={setSelectedTable} />
               )}
             </View>
+            <NavBar 
+              currentTab={currentTab} 
+              onTabChange={setCurrentTab}
+              onSettingsPress={() => setShowSettings(true)}
+            />
           </View>
         </SafeAreaView>
         <StatusBar style="auto" />

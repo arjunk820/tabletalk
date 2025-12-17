@@ -39,7 +39,7 @@ export default function PlanBuilderScreen({ table, onPlanCreated, onBack }: Plan
     const loadStarter = async () => {
       setIsLoadingStarter(true);
       try {
-        const result = await generateTableStarter(table.restaurant, null);
+        const result = await generateTableStarter(table.restaurant);
         if (!cancelled) {
           setStarter(result);
           setInviteCopy(result.inviteCopy);

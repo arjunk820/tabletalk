@@ -85,7 +85,7 @@ tabletalk/
 │   │   ├── RestaurantCard.tsx
 │   │   ├── RestaurantCardCompact.tsx
 │   │   ├── SparklesIcon.tsx
-│   │   └── TopNavBar.tsx
+│   │   └── NavBar.tsx
 │   ├── screens/             # Screen components
 │   │   ├── OnboardingScreen.tsx
 │   │   ├── PlanBuilderScreen.tsx

@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { colors, spacing } from '../design/tokens';
 
-interface TopNavBarProps {
+interface NavBarProps {
   currentTab: 'swipe' | 'list';
   onTabChange: (tab: 'swipe' | 'list') => void;
   onSettingsPress?: () => void;
@@ -69,7 +69,7 @@ const SettingsIcon = ({ size = 24, color = colors.gray700 }: IconProps) => (
   </Svg>
 );
 
-export default function TopNavBar({ currentTab, onTabChange, onSettingsPress }: TopNavBarProps) {
+export default function NavBar({ currentTab, onTabChange, onSettingsPress }: NavBarProps) {
   return (
     <View style={styles.container}>
       <TouchableOpacity
@@ -115,8 +115,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray200,
+    borderTopWidth: 1,
+    borderTopColor: colors.gray200,
     backgroundColor: colors.white,
     width: '100%',
     zIndex: 10,
