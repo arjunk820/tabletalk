@@ -17,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing, typography, borderRadius } from '../design/tokens';
 import Chip from '../components/Chip';
 import { UserPreferences as UserPreferencesType } from '../utils/storage';
+import { geocodeCity } from '../utils/geocoding';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -57,6 +58,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [cityInput, setCityInput] = useState('');
+  const [cityLoading, setCityLoading] = useState(false);
 
   useEffect(() => {
     if (step === 'taste') {
@@ -89,6 +92,8 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         },
+        // Clear city if GPS is used
+        city: undefined,
       }));
     } catch (error) {
       console.error('Error getting location:', error);
@@ -96,6 +101,42 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
     } finally {
       setLocationLoading(false);
     }
+  };
+
+  const handleCityInput = async () => {
+    if (!cityInput.trim()) return;
+
+    try {
+      setCityLoading(true);
+      setLocationError(null);
+      
+      // Geocode city name
+      const coords = await geocodeCity(cityInput.trim());
+      
+      if (coords) {
+        setPreferences(prev => ({
+          ...prev,
+          city: cityInput.trim(),
+          location: coords,
+        }));
+        setCityInput('');
+      } else {
+        setLocationError('Could not find that city. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error geocoding city:', error);
+      setLocationError('Failed to geocode city');
+    } finally {
+      setCityLoading(false);
+    }
+  };
+
+  const clearCity = () => {
+    setCityInput('');
+    setPreferences(prev => ({
+      ...prev,
+      city: undefined,
+    }));
   };
 
   const handleWelcomeContinue = () => {
@@ -393,34 +434,82 @@ export default function OnboardingScreen({ onComplete }: OnboardingScreenProps) 
           </View>
         </View>
 
-        {/* Location Status */}
+        {/* Location */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Location</Text>
-          {locationLoading ? (
-            <View style={styles.locationStatus}>
-              <ActivityIndicator size="small" color={colors.accent} />
-              <Text style={styles.locationText}>Getting your location...</Text>
-            </View>
-          ) : preferences.location ? (
-            <View style={styles.locationStatus}>
-              <Text style={styles.locationText}>✓ Location saved</Text>
-              <Text style={styles.locationSubtext}>
-                We'll use this to find nearby restaurants
-              </Text>
-            </View>
-          ) : locationError ? (
-            <View style={styles.locationStatus}>
-              <Text style={styles.locationErrorText}>
-                Location not available. You can enable it in settings later.
-              </Text>
+          <Text style={styles.sectionHint}>Choose how to find restaurants</Text>
+          
+          {/* Use Current Location Button */}
+          <TouchableOpacity
+            onPress={requestLocation}
+            style={[styles.locationButton, locationLoading && styles.locationButtonDisabled]}
+            disabled={locationLoading || cityLoading}
+            activeOpacity={0.7}
+          >
+            {locationLoading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.locationButtonText}>Use Current Location</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* OR Separator */}
+          <View style={styles.orSeparator}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>OR</Text>
+            <View style={styles.orLine} />
+          </View>
+
+          {/* City Input */}
+          <View style={styles.cityInputContainer}>
+            <TextInput
+              style={styles.cityInput}
+              placeholder="Enter city name (e.g., Los Angeles, CA)"
+              placeholderTextColor={colors.gray400}
+              value={cityInput}
+              onChangeText={setCityInput}
+              editable={!cityLoading && !locationLoading}
+              onSubmitEditing={handleCityInput}
+            />
+            {cityInput.trim() && (
               <TouchableOpacity
-                onPress={requestLocation}
-                style={styles.retryButton}
+                onPress={handleCityInput}
+                style={[styles.cityButton, cityLoading && styles.cityButtonDisabled]}
+                disabled={cityLoading}
+                activeOpacity={0.7}
               >
-                <Text style={styles.retryButtonText}>Try Again</Text>
+                {cityLoading ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.cityButtonText}>Save</Text>
+                )}
               </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Current Location Status */}
+          {preferences.location && (
+            <View style={styles.locationStatus}>
+              <Text style={styles.locationText}>
+                ✓ Using: {preferences.city || 'Current Location'}
+              </Text>
+              {preferences.city && (
+                <TouchableOpacity
+                  onPress={clearCity}
+                  style={styles.clearCityButton}
+                >
+                  <Text style={styles.clearCityText}>Clear City</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          ) : null}
+          )}
+
+          {/* Error Message */}
+          {locationError && (
+            <View style={styles.locationStatus}>
+              <Text style={styles.locationErrorText}>{locationError}</Text>
+            </View>
+          )}
         </View>
 
         {/* Distance */}
@@ -665,6 +754,79 @@ const styles = StyleSheet.create({
     ...typography.meta,
     color: colors.accent,
     fontWeight: '600',
+  },
+  locationButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  locationButtonDisabled: {
+    opacity: 0.6,
+  },
+  locationButtonText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  orSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.gray300,
+  },
+  orText: {
+    ...typography.meta,
+    color: colors.gray500,
+    marginHorizontal: spacing.md,
+  },
+  cityInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  cityInput: {
+    flex: 1,
+    ...typography.body,
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    color: colors.black,
+    marginRight: spacing.sm,
+  },
+  cityButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    minWidth: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cityButtonDisabled: {
+    opacity: 0.6,
+  },
+  cityButtonText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  clearCityButton: {
+    marginTop: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  clearCityText: {
+    ...typography.meta,
+    color: colors.error,
   },
 });
 

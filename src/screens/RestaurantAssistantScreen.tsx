@@ -139,17 +139,26 @@ export default function RestaurantAssistantScreen({
         conversationHistory
       );
 
-      // If Yelp data is needed, try to get more specific facts
+      // If Yelp data is needed, use Yelp response as primary for factual queries
       let finalResponse = response;
       if (shouldUseYelp) {
         try {
-          const yelpFacts = await getRestaurantFacts(restaurant.name, question);
-          // Combine Groq response with Yelp facts
-          finalResponse = `${response}\n\n${yelpFacts}`;
+          const yelpFacts = await getRestaurantFacts(
+            restaurant.name, 
+            question,
+            restaurant.coordinates.latitude,
+            restaurant.coordinates.longitude
+          );
+          // Use Yelp response as primary for factual queries
+          finalResponse = yelpFacts;
         } catch (yelpError) {
           // Use Groq response if Yelp fails
           console.warn('Yelp API failed, using Groq response:', yelpError);
+          finalResponse = response;
         }
+      } else {
+        // For conversational queries, use Groq response
+        finalResponse = response;
       }
 
       const assistantMessage: ChatMessage = {

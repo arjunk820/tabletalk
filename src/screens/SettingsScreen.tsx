@@ -16,6 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing, typography, borderRadius } from '../design/tokens';
 import Chip from '../components/Chip';
 import { getUserPreferences, saveUserPreferences, UserPreferences } from '../utils/storage';
+import { geocodeCity } from '../utils/geocoding';
 
 const CUISINES = [
   'Italian', 'Mexican', 'Japanese', 'Chinese', 'Thai', 'Indian',
@@ -44,6 +45,9 @@ export default function SettingsScreen() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [cityInput, setCityInput] = useState('');
+  const [cityLoading, setCityLoading] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPreferences();
@@ -56,6 +60,7 @@ export default function SettingsScreen() {
         setPreferences(prefs);
         setName(prefs.name || '');
         setProfilePhoto(prefs.profilePhoto || null);
+        setCityInput(prefs.city || '');
       }
     } catch (error) {
       console.error('Error loading preferences:', error);
@@ -65,8 +70,10 @@ export default function SettingsScreen() {
   const requestLocation = async () => {
     try {
       setLocationLoading(true);
+      setLocationError(null);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
+        setLocationError('Location permission denied');
         Alert.alert(
           'Location Permission',
           'TableTalk needs your location to find nearby restaurants.',
@@ -82,13 +89,52 @@ export default function SettingsScreen() {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         },
+        // Clear city if GPS is used
+        city: undefined,
       } : null);
+      setCityInput('');
     } catch (error) {
       console.error('Error getting location:', error);
+      setLocationError('Failed to get location');
       Alert.alert('Error', 'Failed to get location');
     } finally {
       setLocationLoading(false);
     }
+  };
+
+  const handleCityInput = async () => {
+    if (!cityInput.trim()) return;
+
+    try {
+      setCityLoading(true);
+      setLocationError(null);
+      
+      // Geocode city name
+      const coords = await geocodeCity(cityInput.trim());
+      
+      if (coords) {
+        setPreferences(prev => prev ? {
+          ...prev,
+          city: cityInput.trim(),
+          location: coords,
+        } : null);
+      } else {
+        setLocationError('Could not find that city. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error geocoding city:', error);
+      setLocationError('Failed to geocode city');
+    } finally {
+      setCityLoading(false);
+    }
+  };
+
+  const clearCity = () => {
+    setCityInput('');
+    setPreferences(prev => prev ? {
+      ...prev,
+      city: undefined,
+    } : null);
   };
 
   const pickImage = async () => {
@@ -214,6 +260,7 @@ export default function SettingsScreen() {
         ...preferences,
         name: name.trim() || undefined,
         profilePhoto: profilePhoto || undefined,
+        city: preferences.city || undefined,
       };
       await saveUserPreferences(updatedPrefs);
       Alert.alert('Success', 'Preferences saved!');
@@ -347,28 +394,78 @@ export default function SettingsScreen() {
         {/* Location */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Location</Text>
-          {locationLoading ? (
-            <View style={styles.locationStatus}>
-              <ActivityIndicator size="small" color={colors.accent} />
-              <Text style={styles.locationText}>Getting location...</Text>
-            </View>
-          ) : preferences.location ? (
-            <View style={styles.locationStatus}>
-              <Text style={styles.locationText}>✓ Location saved</Text>
+          <Text style={styles.sectionHint}>Choose how to find restaurants</Text>
+          
+          {/* Use Current Location Button */}
+          <TouchableOpacity
+            onPress={requestLocation}
+            style={[styles.locationButton, locationLoading && styles.locationButtonDisabled]}
+            disabled={locationLoading || cityLoading}
+            activeOpacity={0.7}
+          >
+            {locationLoading ? (
+              <ActivityIndicator size="small" color={colors.white} />
+            ) : (
+              <Text style={styles.locationButtonText}>Use Current Location</Text>
+            )}
+          </TouchableOpacity>
+
+          {/* OR Separator */}
+          <View style={styles.orSeparator}>
+            <View style={styles.orLine} />
+            <Text style={styles.orText}>OR</Text>
+            <View style={styles.orLine} />
+          </View>
+
+          {/* City Input */}
+          <View style={styles.cityInputContainer}>
+            <TextInput
+              style={styles.cityInput}
+              placeholder="Enter city name (e.g., Los Angeles, CA)"
+              placeholderTextColor={colors.gray400}
+              value={cityInput}
+              onChangeText={setCityInput}
+              editable={!cityLoading && !locationLoading}
+              onSubmitEditing={handleCityInput}
+            />
+            {cityInput.trim() && (
               <TouchableOpacity
-                onPress={requestLocation}
-                style={styles.updateLocationButton}
+                onPress={handleCityInput}
+                style={[styles.cityButton, cityLoading && styles.cityButtonDisabled]}
+                disabled={cityLoading}
+                activeOpacity={0.7}
               >
-                <Text style={styles.updateLocationText}>Update Location</Text>
+                {cityLoading ? (
+                  <ActivityIndicator size="small" color={colors.white} />
+                ) : (
+                  <Text style={styles.cityButtonText}>Save</Text>
+                )}
               </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Current Location Status */}
+          {preferences.location && (
+            <View style={styles.locationStatus}>
+              <Text style={styles.locationText}>
+                ✓ Using: {preferences.city || 'Current Location'}
+              </Text>
+              {preferences.city && (
+                <TouchableOpacity
+                  onPress={clearCity}
+                  style={styles.clearCityButton}
+                >
+                  <Text style={styles.clearCityText}>Clear City</Text>
+                </TouchableOpacity>
+              )}
             </View>
-          ) : (
-            <TouchableOpacity
-              onPress={requestLocation}
-              style={styles.updateLocationButton}
-            >
-              <Text style={styles.updateLocationText}>Set Location</Text>
-            </TouchableOpacity>
+          )}
+
+          {/* Error Message */}
+          {locationError && (
+            <View style={styles.locationStatus}>
+              <Text style={styles.locationErrorText}>{locationError}</Text>
+            </View>
           )}
         </View>
 
@@ -530,6 +627,84 @@ const styles = StyleSheet.create({
     ...typography.meta,
     color: colors.accent,
     fontWeight: '600',
+  },
+  locationButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: borderRadius.md,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  locationButtonDisabled: {
+    opacity: 0.6,
+  },
+  locationButtonText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  orSeparator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: spacing.md,
+  },
+  orLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.gray300,
+  },
+  orText: {
+    ...typography.meta,
+    color: colors.gray500,
+    marginHorizontal: spacing.md,
+  },
+  cityInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  cityInput: {
+    flex: 1,
+    ...typography.body,
+    borderWidth: 1,
+    borderColor: colors.gray300,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.white,
+    color: colors.black,
+    marginRight: spacing.sm,
+  },
+  cityButton: {
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.md,
+    minWidth: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cityButtonDisabled: {
+    opacity: 0.6,
+  },
+  cityButtonText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: '600',
+  },
+  clearCityButton: {
+    marginTop: spacing.xs,
+    paddingVertical: spacing.xs,
+  },
+  clearCityText: {
+    ...typography.meta,
+    color: colors.error,
+  },
+  locationErrorText: {
+    ...typography.meta,
+    color: colors.error,
+    marginTop: spacing.xs,
   },
   saveButton: {
     backgroundColor: colors.accent,

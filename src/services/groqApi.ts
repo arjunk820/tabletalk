@@ -187,11 +187,16 @@ export const chatWithRestaurant = async (
 
 export const getRestaurantFacts = async (
   restaurantName: string,
-  question: string
+  question: string,
+  latitude?: number,
+  longitude?: number
 ): Promise<string> => {
   try {
     const response = await askBusinessQuestion(
-      `About ${restaurantName}: ${question}`
+      `About ${restaurantName}: ${question}`,
+      'en_US',
+      latitude,
+      longitude
     );
     return response.response.text;
   } catch (error) {

@@ -104,12 +104,14 @@ export const searchBusinesses = async (
 
 export const askBusinessQuestion = async (
   question: string,
-  locale: string = 'en_US'
+  locale: string = 'en_US',
+  latitude?: number,
+  longitude?: number
 ): Promise<YelpChatResponse> => {
   const userContext: YelpUserContext = {
     locale,
-    latitude: null,
-    longitude: null,
+    latitude: latitude || null,
+    longitude: longitude || null,
   };
 
   return sendChatRequest(question, userContext);

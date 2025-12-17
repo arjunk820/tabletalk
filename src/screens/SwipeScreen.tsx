@@ -147,7 +147,7 @@ export default function SwipeScreen({ onChatPress }: SwipeScreenProps = {}) {
       setLoading(true);
       setError(null);
 
-      // Build query based on user preferences
+      // Determine which location to use (city takes precedence over GPS)
       const location = userPreferences.location;
       if (!location) {
         setError('Location not set. Please update your settings.');
@@ -160,10 +160,15 @@ export default function SwipeScreen({ onChatPress }: SwipeScreenProps = {}) {
         ? userPreferences.cuisines.join(', ')
         : 'restaurants';
 
-      // Build query string
-      const query = `Popular ${cuisineQuery} restaurants near me`;
+      // Build query string - include city name if city is set
+      let query = `Popular ${cuisineQuery} restaurants`;
+      if (userPreferences.city) {
+        query += ` in ${userPreferences.city}`;
+      } else {
+        query += ` near me`;
+      }
 
-      // Search with user's location
+      // Search with location coordinates (from city if set, otherwise GPS)
       const response = await searchBusinesses(
         query,
         location.latitude,

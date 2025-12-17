@@ -23,7 +23,8 @@ export interface UserPreferences {
   location?: {
     latitude: number;
     longitude: number;
-  }; // User's current location
+  }; // User's current location (GPS or geocoded from city)
+  city?: string; // Optional city name (e.g., "Los Angeles, CA" or "Dallas, TX") - acts as override to GPS
 }
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
